@@ -3,8 +3,11 @@ package mineverse.Aust1n46.chat.listeners;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
 import net.essentialsx.api.v2.services.discord.DiscordService;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -42,24 +45,20 @@ public class ChatListener implements Listener {
 
 	}
 
-	// this event isn't always asynchronous even though the event's name starts with "Async"
-    // blame md_5 for that one
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onAsyncPlayerChatEvent(AsyncPlayerChatEvent event) {
+	public void onAsyncChatEvent(AsyncChatEvent event) {
 		event.setCancelled(true);
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-			@Override
-			public void run() {
-				handleTrueAsyncPlayerChatEvent(event);
-			}
-		});
+		handleTrueAsyncPlayerChatEvent(event);
 	}
 	
-	public void handleTrueAsyncPlayerChatEvent(AsyncPlayerChatEvent event) {
+	public void handleTrueAsyncPlayerChatEvent(AsyncChatEvent event) {
 		boolean bungee = false;
-		String chat = event.getMessage();
+		String chat = LegacyComponentSerializer.legacyAmpersand().serialize(event.message());
 		String format;
-		Set<Player> recipients = event.getRecipients();
+		Set<Player> recipients = event.viewers()
+			.stream()
+			.filter(viewer -> viewer instanceof Player)
+			.map(viewer -> (Player)viewer).collect(Collectors.toSet());
 		int recipientCount = recipients.size(); // Don't count vanished players
 		MineverseChatPlayer mcp = MineverseChatAPI.getOnlineMineverseChatPlayer(event.getPlayer());
 		ChatChannel eventChannel = mcp.getCurrentChannel();
