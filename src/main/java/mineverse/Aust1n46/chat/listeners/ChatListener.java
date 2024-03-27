@@ -35,6 +35,8 @@ import mineverse.Aust1n46.chat.database.Database;
 import mineverse.Aust1n46.chat.localization.LocalizedMessage;
 import mineverse.Aust1n46.chat.utilities.Format;
 
+import static net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText;
+
 //This class listens to chat through the chat event and handles the bulk of the chat channels and formatting.
 public class ChatListener implements Listener {
 	private final boolean essentialsDiscordHook = Bukkit.getPluginManager().isPluginEnabled("EssentialsDiscord");
@@ -53,12 +55,12 @@ public class ChatListener implements Listener {
 	
 	public void handleTrueAsyncPlayerChatEvent(AsyncChatEvent event) {
 		boolean bungee = false;
-		String chat = LegacyComponentSerializer.legacyAmpersand().serialize(event.message());
+		String chat = plainText().serialize(event.message());
 		String format;
-		Set<Player> recipients = event.viewers()
-			.stream()
+		Set<Player> recipients = event.viewers().stream()
 			.filter(viewer -> viewer instanceof Player)
-			.map(viewer -> (Player)viewer).collect(Collectors.toSet());
+			.map(viewer -> (Player)viewer)
+			.collect(Collectors.toSet());
 		int recipientCount = recipients.size(); // Don't count vanished players
 		MineverseChatPlayer mcp = MineverseChatAPI.getOnlineMineverseChatPlayer(event.getPlayer());
 		ChatChannel eventChannel = mcp.getCurrentChannel();
